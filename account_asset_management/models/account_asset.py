@@ -194,9 +194,7 @@ class AccountAsset(models.Model):
         store=True, readonly=True)
     account_analytic_id = fields.Many2one(
         comodel_name='account.analytic.account',
-        string='Analytic account',
-        domain=[('type', '!=', 'view'),
-                ('state', 'not in', ('close', 'cancelled'))])
+        string='Analytic account')
 
     @api.model
     def _default_company_id(self):
@@ -1077,7 +1075,8 @@ class AccountAsset(models.Model):
             except Exception:
                 e = exc_info()[0]
                 tb = ''.join(format_exception(*exc_info()))
-                asset_ref = depreciation.asset_id.code and '%s (ref: %s)' \
+                asset = depreciation.asset_id
+                asset_ref = asset.code and '%s (ref: %s)' \
                     % (asset.name, asset.code) or asset.name
                 error_log += _(
                     "\nError while processing asset '%s': %s"

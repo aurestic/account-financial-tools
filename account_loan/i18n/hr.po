@@ -294,6 +294,11 @@ msgid "Invoices"
 msgstr ""
 
 #. module: account_loan
+#: model:ir.model.fields,help:account_loan.field_account_loan_post_invoice
+msgid "Invoices will be posted automatically"
+msgstr ""
+
+#. module: account_loan
 #: model:ir.model.fields,field_description:account_loan.field_account_loan_is_leasing
 #: model:ir.model.fields,field_description:account_loan.field_account_loan_line_is_leasing
 msgid "Is Leasing"
@@ -541,6 +546,12 @@ msgid "Post"
 msgstr ""
 
 #. module: account_loan
+#: model:ir.model.fields,field_description:account_loan.field_account_loan_post_invoice
+#, fuzzy
+msgid "Post Invoice"
+msgstr "Račun"
+
+#. module: account_loan
 #: model:ir.actions.act_window,name:account_loan.account_loan_post_action
 msgid "Post loan"
 msgstr ""
@@ -658,7 +669,7 @@ msgid "Some invoices are not created"
 msgstr ""
 
 #. module: account_loan
-#: code:addons/account_loan/model/account_loan_line.py:324
+#: code:addons/account_loan/model/account_loan_line.py:334
 #, python-format
 msgid "Some invoices must be created first"
 msgstr ""
@@ -670,7 +681,7 @@ msgid "Some moves are not created"
 msgstr ""
 
 #. module: account_loan
-#: code:addons/account_loan/model/account_loan_line.py:306
+#: code:addons/account_loan/model/account_loan_line.py:316
 #, python-format
 msgid "Some moves must be created first"
 msgstr ""
