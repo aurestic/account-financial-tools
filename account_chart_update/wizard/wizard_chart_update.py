@@ -353,7 +353,7 @@ class WizardUpdateChartsAccounts(models.TransientModel):
 
     def _get_real_xml_name(self, template):
         [external_id] = template.get_external_id().values()
-        (name, module) = external_id.split('.')
+        (name, module) = external_id.partition('.')[::2]
         return "%s.%d_%s" % (name, self.company_id.id, module)
 
     @api.multi
