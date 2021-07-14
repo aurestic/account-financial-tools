@@ -15,11 +15,11 @@ class AccountMove(models.Model):
     )
 
     @api.multi
-    @api.depends('date', 'company_id')
+    @api.depends('date', 'company_id', 'journal_id.company_id')
     def _compute_date_range_fm(self):
         for rec in self:
             date = rec.date
-            company = rec.company_id
+            company = rec.company_id or rec.journal_id.company_id
             rec.date_range_fm_id = company.find_daterange_fm(date)
 
     @api.model
