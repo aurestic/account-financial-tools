@@ -97,6 +97,19 @@ def migrate(env, version):
             openupgrade.rename_tables(cr, _table_renames)
             openupgrade.copy_columns(cr, _column_copies)
             openupgrade.rename_columns(cr, _column_renames)
+            # nubaea_account_asset_utilities añade estos campos
+            if openupgrade.column_exists(cr, 'account_asset', 'date_start'):
+                openupgrade.rename_fields(
+                    env,
+                    [
+                        (
+                            "account.asset",
+                            "account_asset",
+                            "date_start",
+                            "nubea_date_start",
+                        ),
+                    ],
+                )
             openupgrade.rename_fields(env, _field_renames)
             openupgrade.rename_xmlids(cr, _xml_ids_renames)
             handle_account_asset_disposal_migration(env)
