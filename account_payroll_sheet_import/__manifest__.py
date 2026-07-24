@@ -10,8 +10,7 @@
     "depends": ["account", "hr"],
     "external_dependencies": {
         "python": [
-            "pandas",
-            "openpyxl>=3.1.0",
+            "openpyxl",
         ]
     },
     "data": [
