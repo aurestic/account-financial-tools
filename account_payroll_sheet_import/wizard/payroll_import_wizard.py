@@ -5,7 +5,7 @@ import base64
 import io
 from collections import defaultdict
 
-import pandas as pd
+import openpyxl
 
 from odoo import _, fields, models
 from odoo.exceptions import ValidationError
@@ -65,8 +65,36 @@ class PayrollImportWizard(models.TransientModel):
             }
         )
 
-    def check_columns(self, df, account_map):
-        missing_columns = [col for col in account_map if col not in df.columns]
+    def _read_sheet(self, data):
+        """Read the first worksheet and return (columns, rows as dicts)."""
+        try:
+            workbook = openpyxl.load_workbook(
+                io.BytesIO(data), read_only=True, data_only=True
+            )
+        except Exception as error:
+            raise ValidationError(
+                _("Could not read the Excel file (.xlsx expected): %s") % error
+            ) from error
+        sheet = workbook.active
+        rows_iter = sheet.iter_rows(values_only=True)
+        header = next(rows_iter, None) or ()
+        columns = [
+            str(cell).strip() if cell is not None else "" for cell in header
+        ]
+        rows = []
+        for values in rows_iter:
+            row = {
+                col: value
+                for col, value in zip(columns, values)
+                if col
+            }
+            if any(value is not None for value in row.values()):
+                rows.append(row)
+        workbook.close()
+        return columns, rows
+
+    def check_columns(self, columns, account_map):
+        missing_columns = [col for col in account_map if col not in columns]
         if missing_columns:
             raise ValidationError(
                 _(
@@ -76,7 +104,7 @@ class PayrollImportWizard(models.TransientModel):
                 )
             )
 
-        if self.mapping_id.id_column not in df.columns:
+        if self.mapping_id.id_column not in columns:
             raise ValidationError(
                 _(
                     "The VAT/ID column '%(column)s' specified in the mapping "
@@ -85,16 +113,16 @@ class PayrollImportWizard(models.TransientModel):
                 )
             )
 
-    def build_move_lines(self, df, account_map):
+    def build_move_lines(self, rows, account_map):
         move_lines = []
         not_found = []
 
-        for __, row in df.iterrows():
+        for row in rows:
             total_debit = 0
             total_credit = 0
 
             vat_raw = row.get(self.mapping_id.id_column)
-            if pd.isna(vat_raw):
+            if vat_raw is None or not str(vat_raw).strip():
                 continue
 
             vat = str(vat_raw).strip()
@@ -104,7 +132,7 @@ class PayrollImportWizard(models.TransientModel):
                 continue
 
             for col_name, raw_value in row.items():
-                if col_name not in account_map or pd.isna(raw_value):
+                if col_name not in account_map or raw_value is None:
                     continue
 
                 amount = float(raw_value)
@@ -156,15 +184,15 @@ class PayrollImportWizard(models.TransientModel):
         if not self.file:
             raise ValidationError(_("Please upload a file."))
 
-        if not self.filename.endswith((".xlsx", ".xls")):
-            raise ValidationError(_("Only Excel files are supported."))
+        if not self.filename.endswith(".xlsx"):
+            raise ValidationError(_("Only .xlsx Excel files are supported."))
 
         data = base64.b64decode(self.file)
-        df = df = pd.read_excel(io.BytesIO(data))
+        columns, rows = self._read_sheet(data)
 
         account_map = self.get_account_map()
-        self.check_columns(df, account_map)
-        move_lines, not_found = self.build_move_lines(df, account_map)
+        self.check_columns(columns, account_map)
+        move_lines, not_found = self.build_move_lines(rows, account_map)
 
         if not_found:
             return {
