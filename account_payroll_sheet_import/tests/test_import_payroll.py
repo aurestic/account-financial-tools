@@ -133,7 +133,7 @@ class TestPayrollImport(TransactionCase):
         with self.assertRaises(ValidationError) as e:
             wizard.action_import_payroll()
 
-        self.assertIn("Only Excel files are supported.", str(e.exception))
+        self.assertIn("Only .xlsx Excel files are supported.", str(e.exception))
 
     def test_missing_column(self):
         file_data = self._load_file("test_payroll_1.xlsx")
