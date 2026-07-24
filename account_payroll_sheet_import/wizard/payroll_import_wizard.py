@@ -78,15 +78,11 @@ class PayrollImportWizard(models.TransientModel):
         sheet = workbook.active
         rows_iter = sheet.iter_rows(values_only=True)
         header = next(rows_iter, None) or ()
-        columns = [
-            str(cell).strip() if cell is not None else "" for cell in header
-        ]
+        columns = [str(cell).strip() if cell is not None else "" for cell in header]
         rows = []
         for values in rows_iter:
             row = {
-                col: value
-                for col, value in zip(columns, values)
-                if col
+                col: value for col, value in zip(columns, values, strict=False) if col
             }
             if any(value is not None for value in row.values()):
                 rows.append(row)
